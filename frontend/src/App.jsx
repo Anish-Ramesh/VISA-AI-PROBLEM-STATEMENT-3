@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import Layout from './components/Layout';
 import Upload from './components/Upload';
 import Dashboard from './pages/Dashboard';
+import { generatePDF } from './utils/reportGenerator';
 
 function App() {
   const [analysisData, setAnalysisData] = useState(null);
 
   return (
-    <Layout>
+    <Layout
+      hasData={!!analysisData}
+      onReset={() => setAnalysisData(null)}
+      onExport={() => analysisData && generatePDF(analysisData)}
+    >
       <div className="container">
         {!analysisData ? (
           <Upload onAnalysisComplete={setAnalysisData} />

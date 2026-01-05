@@ -7,3 +7,7 @@ langchain
 langgraph
 pydantic
 python-dotenv
+cryptography
+langchain-community
+faiss-cpu
+requests
