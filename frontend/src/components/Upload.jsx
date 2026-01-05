@@ -24,7 +24,7 @@ const Upload = ({ onAnalysisComplete }) => {
         formData.append('file', file);
 
         try {
-            const response = await fetch('http://localhost:8000/api/analyze', {
+            const response = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData,
             });

@@ -3,17 +3,11 @@ import os
 from services.ingestion import load_data, profile_dataset
 from core.rules_engine import RulesEngine
 from services.scoring import calculate_scores
-from services.advanced_analytics import detect_anomalies, simulate_impacts
 from ai.agent import run_advisory_agent
-from services.provenance import provenance_service
-from pydantic import BaseModel
 
 router = APIRouter()
 
-class ComplianceRequest(BaseModel):
-    scores: dict
-    metadata: dict
-    framework: str
+from services.provenance import provenance_service
 
 @router.post("/analyze")
 async def analyze_data(file: UploadFile = File(...)):
@@ -48,12 +42,8 @@ async def analyze_data(file: UploadFile = File(...)):
             "risk_assessment": str(e),
             "remediation_steps": []
         }
-        
-    # 5. Advanced Analytics (Anomalies & Simulation)
-    anomalies = detect_anomalies(df)
-    impacts = simulate_impacts(rule_results, scores['health_score'])
 
-    # 6. Provenance Attestation
+    # 5. Provenance Attestation
     attestation_data = {
         "filename": file.filename,
         "health_score": scores["health_score"],
@@ -65,32 +55,11 @@ async def analyze_data(file: UploadFile = File(...)):
 
     return {
         "filename": file.filename,
-        "metadata": metadata, 
+        "metadata": metadata, # Frontend might need this for visualization
         "scores": scores,
         "analysis": analysis,
-        "anomalies": anomalies,
-        "impacts": impacts,
         "provenance": provenance
     }
-
-@router.post("/compliance")
-async def consult_compliance(request: ComplianceRequest):
-    """
-    Re-runs the Advisory Agent with a specific Compliance Lens (PCI, GDPR, etc).
-    """
-    try:
-        if not os.environ.get("GOOGLE_API_KEY"):
-             return {"error": "API Key Missing"}
-             
-        # Call agent with framework override
-        analysis = await run_advisory_agent(
-            request.scores, 
-            request.metadata, 
-            framework=request.framework
-        )
-        return analysis
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 from pydantic import BaseModel
 from ai.agent import chat_about_dataset
