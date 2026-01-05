@@ -68,13 +68,35 @@ class ChatRequest(BaseModel):
     question: str
     context: dict
 
+from fastapi import Request
+
 @router.post("/chat")
-async def chat(request: ChatRequest):
+async def chat(raw_request: Request):
+    print("\n🔹 [API DEBUG]: /api/chat hit")
     try:
+        body = await raw_request.json()
+        print(f"   📨 [API RAW BODY]: {body}")
+        
+        # Manual Validation for Debugging
+        try:
+            request = ChatRequest(**body)
+            print("   ✅ [API Model]: Validation Successful")
+        except Exception as vals_err:
+            print(f"   ❌ [API Model]: Validation FAILED: {vals_err}")
+            raise vals_err
+
         if not os.environ.get("GOOGLE_API_KEY"):
-            return {"response": "I need a Google API Key to chat! Please configure backend/.env."}
-            
+             # Double check local read
+             from ai.agent import get_local_key
+             if not get_local_key():
+                print("   ❌ [API Config]: No API KEY found.")
+                return {"response": "I need a Google API Key to chat! Please configure backend/.env."}
+             
+        print("   🤖 [API Agent]: Calling chat_about_dataset...")
         response = await chat_about_dataset(request.question, request.context)
+        print(f"   ✅ [API Agent]: Response generated (Length: {len(response)})")
         return {"response": response}
     except Exception as e:
+        print(f"   ❌ [API Error]: {str(e)}")
+        # traceback.print_exc() # verify if traceback is imported or add it
         raise HTTPException(status_code=500, detail=str(e))

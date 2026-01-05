@@ -8,6 +8,58 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langgraph.graph import StateGraph, END
 import json
+from dotenv import load_dotenv
+
+# Force load .env, overriding system variables to ensure local file is used
+load_dotenv(override=True)
+
+def get_local_key():
+    """
+    Manually reads .env to ensure we get the file's exact content,
+    bypassing potentially stale system environment variables.
+    """
+def get_local_key():
+    """
+    Manually reads .env to ensure we get the file's exact content,
+    bypassing potentially stale system environment variables.
+    """
+    try:
+        env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+        print(f"   📂 [Env Config]: Looking for .env at: {env_path}")
+        
+        if not os.path.exists(env_path):
+             print(f"   ❌ [Env Config]: File NOT found at {env_path}")
+             return os.environ.get("GOOGLE_API_KEY", "")
+        
+        print(f"   ✅ [Env Config]: File found. Scanning content lines...")
+        
+        # utf-8-sig handles BOM if present (common in Windows editing)
+        with open(env_path, "r", encoding="utf-8-sig") as f:
+            for i, line in enumerate(f):
+                clean = line.strip()
+                if not clean or clean.startswith("#"): 
+                    continue
+                
+                # Check for key name pattern
+                if "GOOGLE_API_KEY" in clean:
+                    print(f"      [Line {i+1} Match]: {clean[:20]}...")
+                    # Naive parse: split by =
+                    if "=" in clean:
+                        key_part = clean.split("=", 1)[1].strip()
+                        # Remove quotes
+                        key = key_part.strip('"').strip("'")
+                        print(f"   📄 [Env Config]: Extracted Key: '{key}'")
+                        return key
+                else:
+                    print(f"      [Line {i+1} Skip]: {clean[:15]}...")
+
+    except Exception as e:
+        print(f"   ⚠️ [Key Config]: Could not read local .env: {e}")
+    
+    # Fallback to standard env var if file read fails
+    fallback_key = os.environ.get("GOOGLE_API_KEY", "")
+    print(f"   🗺️ [Env Config]: Falling back to os.environ: ...{fallback_key[-5:] if len(fallback_key)>5 else fallback_key}")
+    return fallback_key
 
 # Define the Agent State
 class AgentState(TypedDict):
@@ -18,16 +70,20 @@ class AgentState(TypedDict):
     insights: str
     analysis: dict
 
-# Initialize LLM
+# Initialize LLM with Explicit Key from File
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
-    temperature=0.2
+    temperature=0.2,
+    google_api_key=get_local_key()
 )
 
-# Initialize Embeddings
+# Initialize Embeddings with Explicit Key from File
 # Note: Embeddings might also fail if it's the same quota. But user only provided fallback for Chat/Completion.
 # We will assume Embeddings are separate or user accepts failure there for now.
-embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001",
+    google_api_key=get_local_key()
+)
 
 # --- Fallback Logic ---
 
@@ -68,9 +124,9 @@ def fallback_gemini_rapidapi(messages: List[BaseMessage]) -> str:
     payload = { "contents": contents_parts }
     
     headers = {
-        "x-rapidapi-key": "2554ce5c9cmsh0d8e9c3b6c30b14p1869ffjsnfbd011f847ed",
-        "x-rapidapi-host": "gemini-pro-ai.p.rapidapi.com",
-        "Content-Type": "application/json"
+        'x-rapidapi-key': "03f51152d6mshde2289b8bd9eeaap1589f3jsn32e6b69226f4",
+        'x-rapidapi-host': "gemini-pro-ai.p.rapidapi.com",
+        'Content-Type': "application/json"
     }
 
     try:
@@ -93,16 +149,26 @@ def fallback_gemini_rapidapi(messages: List[BaseMessage]) -> str:
         print(f"   ❌ [Fallback]: RapidAPI also failed: {e}")
         raise e
 
+import traceback
+
 def invoke_llm_with_fallback(messages: List[BaseMessage]):
     """Synchronous wrapper"""
     try:
+        api_key = get_local_key()
+        # USER REQUEST: Show full key explicitly for debugging
+        print(f"   🔑 [LLM DEBUG]: Using GOOGLE_API_KEY (FULL): '{api_key}'")
+        print(f"   📨 [LLM Request Payload]: {messages}")
+        
         response = llm.invoke(messages)
         return response
     except Exception as e:
         # Check for specific error codes if possible, or just catch all for robustness
         # User asked for "exhaust or 400 or 429 or 500"
+        print("   ❌ [LLM Error Traceback]:")
+        traceback.print_exc()
+        
         err_str = str(e).lower()
-        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota"]):
+        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota", "getaddrinfo"]):
             content = fallback_gemini_rapidapi(messages)
             return AIMessage(content=content)
         raise e
@@ -110,11 +176,19 @@ def invoke_llm_with_fallback(messages: List[BaseMessage]):
 async def invoke_llm_with_fallback_async(messages: List[BaseMessage]):
     """Async wrapper"""
     try:
+        api_key = get_local_key()
+        # USER REQUEST: Show full key explicitly for debugging
+        print(f"   🔑 [LLM ASYNC DEBUG]: Using GOOGLE_API_KEY (FULL): '{api_key}'")
+        print(f"   📨 [LLM ASYNC Request Payload]: {messages}")
+
         response = await llm.ainvoke(messages)
         return response
     except Exception as e:
+        print("   ❌ [LLM Async Error Traceback]:")
+        traceback.print_exc()
+        
         err_str = str(e).lower()
-        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota"]):
+        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota", "getaddrinfo"]):
             loop = asyncio.get_running_loop()
             # Run specific fallback logic in thread to avoid blocking loop
             content = await loop.run_in_executor(None, fallback_gemini_rapidapi, messages)

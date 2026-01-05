@@ -29,7 +29,7 @@ const ChatAssistant = ({ context }) => {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg })
+                body: JSON.stringify({ question: userMsg, context: context })
             });
 
             if (!response.ok) throw new Error("Network response was not ok");
