@@ -10,6 +10,17 @@
 
 ---
 
+## 👥 Collaborators
+
+| Name | Role | GitHub |
+|------|------|--------|
+| **Anish Ramesh** | Developer | [@Anish-Ramesh](https://github.com/Anish-Ramesh) |
+| **Ganesh Arihanth** | Developer | [@GaneshArihanth](https://github.com/GaneshArihanth) |
+| **Boopendranath** | Lead Researcher | [@swankystark](https://github.com/swankystark) |
+| **Eashwar Kumar** | Lead Tester | [@Eashwar-Kumar-T](https://github.com/Eashwar-Kumar-T) |
+
+---
+
 ## 🚀 Key Features
 
 ### 1. 🌍 Multi-Regulation Compliance Engine
@@ -55,61 +66,5 @@ Switch instantly between global standards to re-evaluate your dataset:
 
 ### 1. Clone & Setup
 ```bash
-git clone https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git
+git clone [https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git](https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git)
 cd VISA-AI-PROBLEM-STATEMENT-3
-```
-
-### 2. Run Locally (One-Shot)
-We provide a `build.sh` script to set up everything:
-```bash
-# Windows (Git Bash) or Linux/Mac
-./build.sh
-```
-
-### 3. Run Manually
-**Backend:**
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate
-pip install -r requirements.txt
-# Create .env file with GOOGLE_API_KEY=your_key
-uvicorn main:app --reload
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open **http://localhost:5173** (Frontend) or **http://localhost:8000** (Full Stack if built).
-
----
-
-## ☁️ Deployment (Render)
-
-This project is configured for seamless deployment on **Render.com**.
-
-1. **Connect Repository**: Link this repo to Render.
-2. **Settings**:
-   - **Build Command**: `./build.sh`
-   - **Start Command**: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
-3. **Environment Variables**:
-   - `PYTHON_VERSION`: `3.11.0`
-   - `NODE_VERSION`: `18.17.0`
-   - `GOOGLE_API_KEY`: `...`
-4. **Deploy**: Render will auto-build the React frontend and serve it via FastAPI from `backend/static`.
-
----
-
-## 🔒 Security Summary
-- **No Data Retention**: Uploaded files are processed in-memory and discarded.
-- **Metadata Analyzed**: The AI only sees statistical summaries (column names, null counts), not raw rows.
-- **PII Guardrails**: Automatic redaction of sensitive columns before processing.
-
----
-
-## 📜 License
-MIT License. Created by Anish Ramesh, 2024.
