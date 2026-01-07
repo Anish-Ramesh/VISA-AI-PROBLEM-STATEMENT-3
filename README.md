@@ -62,7 +62,7 @@ Switch instantly between global standards to re-evaluate your dataset:
 ### Prerequisites
 - Python 3.10+
 - Node.js 16+
-- Google API Key (for AI features)
+- Google API Key (for AI features)   
 
 ### 1. Clone & Setup
 ```bash
