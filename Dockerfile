@@ -26,6 +26,9 @@ COPY backend/ ./backend
 # Copy built frontend assets to backend/static
 COPY --from=frontend-builder /app/frontend/dist ./backend/static
 
+# Set working directory to backend so imports like 'from api...' work
+WORKDIR /app/backend
+
 # Env vars
 ENV PORT=8080
 
@@ -33,5 +36,4 @@ ENV PORT=8080
 EXPOSE $PORT
 
 # Start command
-# Railway provides PORT env var. Uvicorn needs to listen on 0.0.0.0
-CMD sh -c "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+CMD sh -c "uvicorn main:app --host 0.0.0.0 --port $PORT"
