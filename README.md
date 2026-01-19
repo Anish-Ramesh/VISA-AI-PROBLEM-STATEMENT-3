@@ -106,7 +106,7 @@ Understanding the flow of data is key to trusting the system.
 
 ```text
 FinAUDIT/
-├── build.sh                 # One-click setup script
+├── Dockerfile               # 🐳 Docker Configuration
 ├── README.md                # The master guide (You are here!)
 ├── backend/                 # 🐍 Python FastAPI Server
 │   ├── main.py              # Entry point (App initialization)
@@ -136,63 +136,56 @@ FinAUDIT/
 
 ---
 
-## ⚡ Installation Guide (Beginner Friendly)
+## ⚡ Installation & Deployment Guide
 
 ### Prerequisites
 
-Before we start, verify you have these tools:
+1.  **Google API Key**: Needed for the AI. [Get a free key here](https://aistudio.google.com/app/apikey).
+2.  **Git**: To download the code.
 
-1.  **Python (3.10 or newer)**: Type `python --version` in your terminal.
-2.  **Node.js (16 or newer)**: Type `node -v`.
-3.  **Git**: To download the code.
-4.  **Google API Key**: Needed for the AI. [Get a free key here](https://aistudio.google.com/app/apikey).
+### Option A: Deploy on Railway (Recommended) ☁️
 
-### Option A: The Automatic Way 🪄
+1.  **Fork/Clone** this repository to your GitHub.
+2.  **Login to Railway**: Go to [Railway.app](https://railway.app/).
+3.  **New Project**: Select "Deploy from GitHub repo" and choose this project.
+4.  **Wait for Build**: Railway will automatically detect the `Dockerfile`.
+5.  **Configure Env**:
+    - Go to **Variables**.
+    - Add `GOOGLE_API_KEY` with your key.
+6.  **Done!** Your app is live at the provided URL.
 
-_(Best for Mac/Linux users)_
+### Option B: Run Locally with Docker 🐳
 
-1.  Open your terminal.
-2.  Navigate to the project folder.
-3.  Run:
+1.  **Clone the Repo**:
     ```bash
-    ./build.sh
+    git clone https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git
+    cd VISA-AI-PROBLEM-STATEMENT-3
     ```
-4.  Follow the on-screen prompts.
+2.  **Set API Key**:
+    - Create a `.env` file in the root or backend folder.
+    - Add: `GOOGLE_API_KEY=your_key_here`
+3.  **Build & Run**:
+    ```bash
+    docker build -t finaudit .
+    docker run -p 8080:8080 -e GOOGLE_API_KEY=your_key_here finaudit
+    ```
+4.  **Access**: Open `http://localhost:8080`.
 
-### Option B: The Manual Way 🛠️
+### Option C: Run Locally (Manual) 🛠️
 
-_(Best for Windows users or manual control)_
+#### Backend Setup
 
-#### Step 1: Clone the Repo
+1.  Navigate to `backend`: `cd backend`
+2.  Create Env: `python3 -m venv venv && source venv/bin/activate`
+3.  Install: `pip install -r requirements.txt`
+4.  Set Key: Export your key or create a `.env` file.
+5.  Run: `uvicorn main:app --reload --port 8080`
 
-```bash
-git clone https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git
-cd VISA-AI-PROBLEM-STATEMENT-3
-```
+#### Frontend Setup
 
-#### Step 2: Backend Setup (The Brain)
-
-1.  **Navigate**: `cd backend`
-2.  **Create Environment**:
-    - Windows: `python -m venv .venv`
-    - Mac/Linux: `python3 -m venv .venv`
-3.  **Activate**:
-    - Windows: `.venv\Scripts\activate`
-    - Mac/Linux: `source .venv/bin/activate`
-4.  **Install Tools**: `pip install -r requirements.txt`
-5.  **Add Secrets**:
-    - Create a file named `.env`.
-    - Add this line: `GOOGLE_API_KEY=your_actual_key_here`
-6.  **Run**: `uvicorn main:app --reload`
-    - You should see: `Uvicorn running on http://127.0.0.1:8000`
-
-#### Step 3: Frontend Setup (The Face)
-
-1.  Open a **new** terminal window.
-2.  **Navigate**: `cd frontend`
-3.  **Install**: `npm install`
-4.  **Run**: `npm run dev`
-    - You should see: `Local: http://localhost:5173`
+1.  Navigate to `frontend`: `cd frontend`
+2.  Install: `npm install`
+3.  Run: `npm run dev`
 
 ---
 
